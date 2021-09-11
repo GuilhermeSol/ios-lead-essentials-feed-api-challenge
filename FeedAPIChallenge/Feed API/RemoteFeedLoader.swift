@@ -12,9 +12,12 @@ public final class RemoteFeedLoader: FeedLoader {
 		case connectivity
 		case invalidData
 	}
-	
+
 	private struct Root: Decodable {
 		var items: [FeedImageItem]
+		var feedItems: [FeedImage] {
+			items.compactMap({ $0.feedImage })
+		}
 	}
 
 	private struct FeedImageItem: Decodable {
@@ -22,6 +25,13 @@ public final class RemoteFeedLoader: FeedLoader {
 		var image_desc: String?
 		var image_loc: String?
 		var image_url: URL
+
+		var feedImage: FeedImage {
+			FeedImage(id: UUID(uuidString: image_id)!,
+			          description: image_desc,
+			          location: image_loc,
+			          url: image_url)
+		}
 	}
 
 	public init(url: URL, client: HTTPClient) {
@@ -38,7 +48,8 @@ public final class RemoteFeedLoader: FeedLoader {
 					return
 				}
 				do {
-					_ = try JSONDecoder().decode(Root.self, from: data)
+					let items = try JSONDecoder().decode(Root.self, from: data)
+					completion(.success(items.feedItems))
 				} catch {
 					completion(.failure(Error.invalidData))
 				}
@@ -48,5 +59,4 @@ public final class RemoteFeedLoader: FeedLoader {
 			}
 		}
 	}
-	
 }
