@@ -40,23 +40,24 @@ public final class RemoteFeedLoader: FeedLoader {
 	}
 
 	public func load(completion: @escaping (FeedLoader.Result) -> Void) {
-		client.get(from: url) { result in
-			switch result {
-			case let .success((data, response)):
-				guard response.statusCode == 200 else {
-					completion(.failure(Error.invalidData))
-					return
-				}
-				do {
-					let items = try JSONDecoder().decode(Root.self, from: data)
-					completion(.success(items.feedItems))
-				} catch {
-					completion(.failure(Error.invalidData))
-				}
-
-			case .failure:
-				completion(.failure(Error.connectivity))
+		client.get(from: url) { [weak self] result in
+			if let feedResult = self?.map(result: result){
+				completion(feedResult)
 			}
 		}
 	}
+
+	private func map(result: Result<(Data, HTTPURLResponse), Swift.Error>) -> FeedLoader.Result {
+		switch result {
+		case let .success((data, response)):
+			guard response.statusCode == 200,
+			      let items = try? JSONDecoder().decode(Root.self, from: data) else {
+				return .failure(Error.invalidData)
+			}
+			return .success(items.feedItems)
+		case .failure:
+			return .failure(Error.connectivity)
+		}
+	}
+	
 }
