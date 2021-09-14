@@ -8,7 +8,7 @@
 
 import Foundation
 
-internal class FeedImageItemMapper {
+final class FeedImageItemMapper {
 	
 	private static var OK_200:Int{ 200 }
 	
@@ -32,8 +32,10 @@ internal class FeedImageItemMapper {
 			          url: image_url)
 		}
 	}
-
-	internal static func map(data: Data, response: HTTPURLResponse) -> RemoteFeedLoader.Result {
+	
+	private init(){}
+	
+	static func map(data: Data, response: HTTPURLResponse) -> RemoteFeedLoader.Result {
 		guard response.statusCode == OK_200,
 		      let items = try? JSONDecoder().decode(Root.self, from: data) else {
 			return .failure(RemoteFeedLoader.Error.invalidData)
