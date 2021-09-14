@@ -13,17 +13,17 @@ final class FeedImageItemMapper {
 	private static var OK_200:Int{ 200 }
 	
 	private struct Root: Decodable {
-		var items: [FeedImageItem]
+		let items: [FeedImageItem]
 		var feedItems: [FeedImage] {
-			items.compactMap({ $0.feedImage })
+			items.map({ $0.feedImage })
 		}
 	}
 
 	private struct FeedImageItem: Decodable {
-		var image_id: String
-		var image_desc: String?
-		var image_loc: String?
-		var image_url: URL
+		let image_id: String
+		let image_desc: String?
+		let image_loc: String?
+		let image_url: URL
 
 		var feedImage: FeedImage {
 			FeedImage(id: UUID(uuidString: image_id)!,
